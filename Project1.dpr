@@ -4,7 +4,10 @@ uses
   Vcl.Forms,
   Unit1 in 'Unit1.pas' {frmToogl},
   Pkg.Json.DTO in 'Pkg.Json.DTO.pas',
-  TimeEntry in 'TimeEntry.pas';
+  UTimeEntry in 'UTimeEntry.pas',
+  UToogl in 'UToogl.pas',
+  Rest in 'Rest.pas',
+  ULog in 'ULog.pas';
 
 {$R *.res}
 

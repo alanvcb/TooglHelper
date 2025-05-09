@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, System.NetEncoding, Vcl.StdCtrls,
-  Vcl.ExtCtrls, Vcl.ComCtrls, TimeEntry, System.ImageList, Vcl.ImgList,REST.Client, REST.Types;
+  Vcl.ExtCtrls, Vcl.ComCtrls, UTimeEntry, System.ImageList, Vcl.ImgList,REST.Client, REST.Types;
 
 const ConfFile = 'toogl.conf';
 
@@ -21,7 +21,7 @@ type
     edtApiKey: TEdit;
     Label1: TLabel;
     btnSaveConfig: TButton;
-    mmDebug: TMemo;
+    mmLog: TRichEdit;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure edtWorkspaceRightButtonClick(Sender: TObject);
@@ -36,7 +36,6 @@ type
   public
   procedure getRest(out AClient: TRESTClient; out ARequest: TRESTRequest;
   out AResponse: TRESTResponse;AAPIKey: String);
-  procedure EscreveLN(Texto: String);
   function getWorkSpace(AAPIKey: string): string;
   procedure GetTogglEntries(AAPIKey: string; ADate: TDateTime);
   procedure SetTogglEntries(AAPIKey, AWorkSpaceID: string;TimeEntrys: TTimeEntryList);
@@ -52,7 +51,7 @@ implementation
 
 { TForm1 }
 
-uses  System.JSON;
+uses  System.JSON, ULog;
 
 procedure TfrmToogl.btnSaveConfigClick(Sender: TObject);
 begin
@@ -75,15 +74,11 @@ begin
     edtWorkspace.Text := getWorkSpace(edtApiKey.Text);
 end;
 
-procedure TfrmToogl.EscreveLN(Texto: String);
-begin
-  mmDebug.Lines.Add('['+FormatDateTime('HH:NN:SS:ZZZ',Now)+'] '+Texto);
-end;
-
 procedure TfrmToogl.FormActivate(Sender: TObject);
 begin
   if not Ativou then
   begin
+    Log.LogDest :=  mmLog;
     LoadConfig;
     Ativou := True;
   end;
@@ -156,14 +151,14 @@ begin
             EscreveLN('Start: ' + JSONObject.GetValue('start').Value);
             EscreveLN('End: ' + JSONObject.GetValue('stop').Value);
             EscreveLN('Duration: ' + JSONObject.GetValue('duration').Value);}
-            EscreveLn(JSONObject.ToString);
-            EscreveLN('----------------------------------------');
+            log.LogTrace(JSONObject.ToString);
+
 
           end;
         end
         else
         begin
-          EscreveLN('Nenhuma entrada encontrada para o dia especificado.');
+          Log.LogWarning('Nenhuma entrada encontrada para o dia especificado.');
         end;
       finally
         JSONArray.Free;
@@ -171,7 +166,7 @@ begin
     end
     else
     begin
-      EscreveLN('Erro na requisição: ' + RestResponse.StatusText);
+      Log.LogError('Erro na requisição: ' + RestResponse.StatusText);
     end;
   finally
     // Libera os componentes
@@ -190,14 +185,14 @@ var
   JSONObject: TJSONObject;
 begin
   try
-    EscreveLN('Finding workspace id...');
+    log.LogTrace('Finding workspace id...');
     getRest(RestClient,RestRequest,RestResponse,AAPIKey);
     RestRequest.Method := rmGET;
     // Configura o cliente REST
     RestClient.BaseURL := 'https://api.track.toggl.com/api/v9/me/workspaces';
     RestClient.Authenticator := nil;
 
-    EscreveLN('Executing rest requisition');
+    log.LogTrace('Executing rest requisition');
     RestRequest.Execute;
 
     if RestResponse.StatusCode = 200 then
@@ -227,7 +222,7 @@ load: TStringStream;
 begin
   if FileExists(ConfFile) then
   begin
-    EscreveLN('Loading config...');
+    log.LogTrace('Loading config...');
     load := TStringStream.Create;
     try
       load.LoadFromFile(ConfFile);
@@ -250,13 +245,13 @@ save: TStringStream;
 begin
   config := TJSONObject.Create;
   try
-    EscreveLN('Saving Config...');
+    log.LogTrace('Saving Config...');
     config.AddPair('api_key',edtApiKey.Text);
     config.AddPair('workspace_id',edtWorkspace.Text);
     save := TStringStream.Create(config.ToString,TEncoding.UTF8,False);
     try
       save.SaveToFile(ConfFile);
-      EscreveLN('Save config: '+ConfFile);
+      log.LogTrace('Save config: '+ConfFile);
     finally
       save.Free;
     end;
@@ -296,8 +291,7 @@ begin
         try
            if Assigned(JSONObject) then
            begin
-                EscreveLn(JSONObject.ToString);
-                EscreveLN('----------------------------------------');
+                log.LogMessage(JSONObject.ToString);
            end;
         finally
           JSONObject.Free;
@@ -305,7 +299,7 @@ begin
       end
       else
       begin
-        EscreveLN('Erro na requisição: ' + RestResponse.Content);
+        log.LogError('Erro na requisição: ' + RestResponse.Content);
       end;
     end;
   finally

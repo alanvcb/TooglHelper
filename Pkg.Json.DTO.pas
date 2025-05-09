@@ -23,11 +23,14 @@ type
   protected
     function GetAsJson: string; virtual;
     procedure SetAsJson(aValue: string); virtual;
+    function GetAsJsonObject: TJSONObject;
+    procedure SetAsJsonObject(const Value: TJSONObject);
   public
     constructor Create; override;
     class function PrettyPrintJSON(aJson: string): string; overload;
     function ToString: string; override;
     property AsJson: string read GetAsJson write SetAsJson;
+    property AsJsonObject: TJSONObject read GetAsJsonObject write SetAsJsonObject;
   end;
 
   GenericListReflectAttribute = class(JsonReflectAttribute)
@@ -55,6 +58,11 @@ end;
 function TJsonDTO.GetAsJson: string;
 begin
   Result := TJson.ObjectToJsonString(Self, FOptions);
+end;
+
+function TJsonDTO.GetAsJsonObject: TJSONObject;
+begin
+  Result := TJson.ObjectToJsonObject(Self,FOptions);
 end;
 
 const
@@ -177,6 +185,11 @@ begin
   finally
     JSONValue.Free;
   end;
+end;
+
+procedure TJsonDTO.SetAsJsonObject(const Value: TJSONObject);
+begin
+  SetAsJson(Value.ToJSON);
 end;
 
 function TJsonDTO.ToString: string;

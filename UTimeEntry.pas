@@ -1,9 +1,9 @@
-unit TimeEntry;
+unit UTimeEntry;
 
 interface
 
 uses
-  Pkg.Json.DTO, System.Generics.Collections, REST.Json.Types;
+  Pkg.Json.DTO, System.Generics.Collections, REST.Json.Types, System.JSON;
 
 {$M+}
 
@@ -35,6 +35,7 @@ type
   protected
     function GetAsJson: string; override;
   published
+    constructor Create(AJson: TJSONObject); overload;
     property Billable: Boolean read FBillable write FBillable;
     property CreatedWith: string read FCreatedWith write FCreatedWith;
     property Description: string read FDescription write FDescription;
@@ -51,6 +52,12 @@ type
   TTimeEntryList = TList<TTimeEntry>;
 
 implementation
+
+constructor TTimeEntry.Create(AJson: TJSONObject);
+begin
+  inherited Create;
+  SetAsJsonObject(AJson);
+end;
 
 { TRoot }
 

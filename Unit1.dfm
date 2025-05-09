@@ -18,11 +18,9 @@ object frmToogl: TfrmToogl
     Top = 0
     Width = 628
     Height = 442
-    ActivePage = tshDebug
+    ActivePage = tshConfig
     Align = alClient
     TabOrder = 0
-    ExplicitWidth = 624
-    ExplicitHeight = 441
     object tshConfig: TTabSheet
       Caption = 'Config'
       object Label2: TLabel
@@ -80,24 +78,21 @@ object frmToogl: TfrmToogl
     object tshDebug: TTabSheet
       Caption = 'Debug'
       ImageIndex = 2
-      object mmDebug: TMemo
+      object mmLog: TRichEdit
         Left = 0
         Top = 0
         Width = 620
         Height = 412
-        TabStop = False
         Align = alClient
         Color = clBlack
         Font.Charset = ANSI_CHARSET
         Font.Color = clWhite
-        Font.Height = -11
+        Font.Height = -12
         Font.Name = 'Consolas'
         Font.Style = []
         ParentFont = False
-        ReadOnly = True
         ScrollBars = ssVertical
         TabOrder = 0
-        StyleElements = [seBorder]
       end
     end
   end
